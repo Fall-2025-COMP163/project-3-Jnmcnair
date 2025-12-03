@@ -178,60 +178,18 @@ def use_item(character, item_id, item_data):
     # 1. Check if character has the item
     # 1. Check if character has the item
     if not has_item(character, item_id):
-        raise ItemNotFoundError(item_id)
-        
-    item_name = item_data.get('name', item_id)
-    item_type = item_data.get('type')
+        raise ItemNotFoundError(f"Item '{item_id}' not found.")
     
-    # 2. Check if item type is 'consumable'
-    if item_type != 'consumable':
-        raise InvalidItemTypeError(f"Item '{item_name}' is a '{item_type}' and cannot be used in this manner.")
-        
-    # 3. Parse effect data
-    effect = item_data.get('effect')
-    if not effect or 'stat' not in effect or 'value' not in effect:
-        raise InvalidItemTypeError(f"Item '{item_name}' has an invalid or missing effect definition.")
-
-    stat_name = effect['stat']
-    stat_value = effect['value']
+    if item_data["type"] != "consumable":
+        raise InvalidItemTypeError("Only consumable items can be used.")
     
-    effect_message = ""
+    stat, value = parse_item_effect(item_data["effect"])
+    apply_stat_effect(character, stat, value)
 
-    # 4. Directly apply the effect based on the stat_name
-    
-    if stat_name == "health":
-        current_hp = character.get('health', 0)
-        max_hp = character.get('max_health', current_hp)
-        
-        # Calculate new health, capped by max_health
-        new_hp = min(current_hp + stat_value, max_hp)
-        
-        # Calculate the actual amount gained
-        actual_gain = new_hp - current_hp
-        
-        character['health'] = new_hp
-        
-        if actual_gain > 0:
-            effect_message = f"Healed for {actual_gain} HP."
-        elif actual_gain < 0:
-            effect_message = f"Lost {abs(actual_gain)} HP."
-        else:
-            effect_message = "Health remains unchanged (already maxed or item had no effect)."
-            
-    # Handle other stats (e.g., strength, defense) as permanent buffs/debuffs
-    elif stat_name in character:
-        character[stat_name] = character.get(stat_name, 0) + stat_value
-        effect_message = f"{stat_name} changed by {stat_value}."
-    
-    else:
-        effect_message = f"Effect on unsupported stat '{stat_name}' was skipped."
-
-
-    # 5. Remove item from inventory
     remove_item_from_inventory(character, item_id)
-    
-    # Final message assembly
-    return f"✨ Used {item_name}. {effect_message}"
+
+    return f"{character['name']} used {item_id} and gained {stat} +{value}."
+
 
 def equip_weapon(character, item_id, item_data):
     """
@@ -269,12 +227,13 @@ def equip_weapon(character, item_id, item_data):
     if item_type != 'weapon':
         raise InvalidItemTypeError(f"Item '{item_name}' is a '{item_type}'. Only 'weapon' can be equipped here.")
 
-    effect = item_data.get('effect')
-    if not effect or 'stat' not in effect or 'value' not in effect:
-        raise InvalidItemTypeError(f"Weapon '{item_name}' has an invalid effect definition.")
+    try:
+        new_stat, new_value = parse_item_effect(item_data.get('effect'))
+    except InvalidItemTypeError as e:
+        # Re-raise with a more specific error message if parsing fails
+        raise InvalidItemTypeError(f"Weapon '{item_name}' effect parsing error: {e}")
+    
 
-    new_stat = effect['stat']
-    new_value = effect['value']
 
     unequip_message = ""
     
@@ -330,12 +289,11 @@ def equip_armor(character, item_id, item_data):
     if item_type != 'armor':
         raise InvalidItemTypeError(f"Item '{item_name}' is a '{item_type}'. Only 'armor' can be equipped here.")
 
-    effect = item_data.get('effect')
-    if not effect or 'stat' not in effect or 'value' not in effect:
-        raise InvalidItemTypeError(f"Armor '{item_name}' has an invalid effect definition.")
-
-    new_stat = effect['stat']
-    new_value = effect['value']
+    try:
+        new_stat, new_value = parse_item_effect(item_data.get('effect'))
+    except InvalidItemTypeError as e:
+        # Re-raise with a more specific error message if parsing fails
+        raise InvalidItemTypeError(f"Armor '{item_name}' effect parsing error: {e}")
 
     unequip_message = ""
     
@@ -345,7 +303,7 @@ def equip_armor(character, item_id, item_data):
     #  Apply New Armor Effect (Inline Logic)
     applied_new_bonus = False
     if new_stat in character and isinstance(character[new_stat], (int, float)):
-        character[new_stat] += new_value
+        apply_stat_effect(character, new_stat, new_value)
         applied_new_bonus = True
         
         

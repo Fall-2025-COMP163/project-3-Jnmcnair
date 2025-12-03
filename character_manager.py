@@ -42,8 +42,9 @@ def create_character(name, character_class):
         "Rogue": {"health": 90, "strength": 12, "magic": 10},
         "Cleric": {"health": 100, "strength": 10, "magic": 15},
     }
+    valid_classes = list(BASE_STATS.keys())
     if character_class not in BASE_STATS:
-        raise InvalidCharacterClassError(character_class)
+        raise InvalidCharacterClassError(character_class, valid_classes)
     stats = BASE_STATS[character_class]
     character_data = {
         "name": name,
@@ -155,7 +156,7 @@ def load_character(character_name, save_directory="data/save_games"):
     full_path = os.path.join(save_directory, filename)
     
     if not os.path.exists(full_path):
-        raise CharacterNotFoundError(character_name, full_path)
+        raise CharacterNotFoundError(character_name)
         
     character_data = {}
     

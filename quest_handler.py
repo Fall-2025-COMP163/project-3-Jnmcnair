@@ -58,7 +58,7 @@ def accept_quest(character, quest_id, quest_data_dict):
 
     # Level requirement
     if character['level'] < quest['required_level']:
-        raise InsufficientLevelError("Character level is too low.")
+        raise InsufficientLevelError(character['level'], quest['required_level'])
 
     # Prerequisite check
     prereq = quest['prerequisite']
