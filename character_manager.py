@@ -4,7 +4,9 @@ Character Manager Module - Starter Code
 
 Name: [Your Name Here]
 
-AI Usage: [Document any AI assistance used]
+AI Usage: Gemini AI used throughout all files to identify and fix bugs as well as
+explain how the code fails the test cases.
+Ai was mostly used to fix issues in game_data and quest_hgandler modules.
 
 This module handles character creation, loading, and saving.
 """
