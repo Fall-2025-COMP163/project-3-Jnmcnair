@@ -128,11 +128,19 @@ This project encourages creativity! Here's what you can customize:
 Document your project with:
 
 1. **Module Architecture:** Explain your module organization
-2. **Exception Strategy:** Describe when/why you raise specific exceptions
-3. **Design Choices:** Justify major decisions
-4. **AI Usage:** Detail what AI assistance you used
-5. **How to Play:** Instructions for running the game
+The game_data module acts as the Data Layer, managing file loading, parsing, and strict validation of all game assets (quests and items). The character_manager (implied) oversees the Game State, handling character creation and attribute updates. Finally, the quest_handler module contains the Game Logic, enforcing rules for accepting, progressing, and rewarding quests by coordinating data from the other modules. This structure enhances readability, maintainability, and testing by preventing logic from being tightly coupled.
 
+3. **Exception Strategy:** Describe when/why you raise specific exceptions
+Throughout each module I chose the most critical and/or relevant exceptions for the instance to make sure that the game proceeded without any hiccups. I did this to make sure there were no critical failures throughout. Within the game_data.py module, exceptions like MissingDataFileError and InvalidDataFormatError signal critical issues related to file access and malformed data structure (e.g., a string found where an integer is expected), preventing the game from loading corrupt information. In the quest_handler.py module, exceptions like InsufficientLevelError and QuestRequirementsNotMetError enforce core game rules, immediately stopping the player's attempt to accept a quest if prerequisites like level or prerequisite quest completion aren't satisfied.
+5. **Design Choices:** Justify major decisions
+The project's design is justified by key decisions focused on usability and integrity. A major choice is data normalization, specifically converting raw file strings like 'health:20' into structured Python dictionaries {'stat': 'health', 'value': 20} during the load phase, which greatly simplifies game logic and prevents runtime errors. Another crucial decision is using custom exceptions (e.g., InsufficientLevelError, InvalidDataFormatError) , which allows the code to signal specific failures clearly and enables graceful error handling in the main game loop. Finally, adhering to Separation of Concerns by placing quest acceptance rules in the quest_handler.py (logic) and leaving file structure checks to game_data.py (data) ensures that each module has a single, testable responsibility.
+7. **AI Usage:** Detail what AI assistance you used
+8. Gemini AI used throughout all files to identify and fix bugs as well as
+explain how the code fails the test cases.
+Ai was mostly used to fix issues in game_data and quest_hgandler modules.
+
+9. **How to Play:** Instructions for running the game
+First, ensure you have Python 3.x installed and that all necessary module files (game_data.py, quest_handler.py, etc.) are present in your project directory. Second, confirm that the data directory contains the required game content files (like quests.txt and items.txt); the game may automatically create these defaults if they are missing. Finally, to launch the application, open your terminal, navigate to the project's root folder, and execute the main game file (typically main.py) using the command: python main.py. This initiates the game's sequence, starting with data loading, character creation, and entering the main text-based game loop.
 ### What to Submit:
 
 1. **GitHub Repository:** Your completed multi-module project
